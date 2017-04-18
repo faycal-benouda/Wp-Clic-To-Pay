@@ -23,4 +23,9 @@ Site: htt://www.faycal.benouda.com
  
  5- Enjoy it and thank you.
  
+ # Recommandation
+
+Install Wordpress Email  templates
+
+https://github.com/faycal-benouda/wordpress-email-templates
  
