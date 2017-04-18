@@ -99,7 +99,7 @@ function FormClickToPay_shortcode(){
 	$OptionsSetting=get_option( 'settingctpt_settings' );
 
 	$DATE_TIME =date('dmYHis');
-	$SESSION_ID="wc_order_58e3a4db624gg";
+	$SESSION_ID="wp_ses_".$DATE_TIME;
 	$AMOUNT="";
 	$MERCHANT_ID=$OptionsSetting["fay_clicktopay_merchantid"];
 	$PAYMENT_REFERENCE="ref_".$DATE_TIME;
