@@ -1,0 +1,143 @@
+.BcOptionsFayc .input-group {
+    width: 100%;
+}
+
+.BcOptionsFayc h2 {
+    background: #2d2d2d;
+    color: #fff;
+    text-align: center;
+    padding: 15px;
+}
+
+.BcOptionsFayc .form-control {
+    border: 1px solid #696969 !important;
+    box-shadow: none;
+    border-radius: 0;
+    height: 39px;
+    width: 100%;
+}
+
+.BcOptionsFayc textarea {
+    border: 1px solid #696969 !important;
+}
+
+.BcOptionsFayc input[type=submit] {
+    background: #000000;
+    border: 0;
+    border-radius: 0;
+    padding: 0 15px;
+    height: 45px;
+    line-height: 45px;
+    box-shadow: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: none;
+    transition: 0.5s all;
+}
+
+.BcOptionsFayc input[type=submit]:hover {
+    background: #1e73be;
+}
+
+.linkPDF {
+    background: #1e73be;
+    border: 0;
+    border-radius: 0;
+    padding: 0 5px;
+    height: 35px;
+    line-height: 35px;
+    box-shadow: none;
+    text-transform: none;
+    letter-spacing: 1px;
+    text-shadow: none;
+    transition: 0.5s all;
+    font-size: 13px;
+    color: #fff;
+}
+
+.linkPDF:hover {
+    background: #000000;
+}
+
+.BcOptionsFayc .form-table {
+    width: 90%;
+    margin: 5px auto;
+}
+
+.BcOptionsFayc .form-table td {
+    padding: 5px 5px;
+}
+
+.BcOptionsFayc .form-table th {
+    text-align: right;
+    width: 140px;
+    padding: 5px 10px 5px 0;
+    vertical-align: middle;
+}
+
+.BcOptionsFayc p {
+    text-align: center;
+}
+
+.BcOptionsFayc .input-group-addon {
+    background: transparent;
+    border-radius: 0;
+    border: 1px solid #696969;
+    color: #1e73be;
+    font-size: 18px;
+    width: 35px;
+    padding: 0 !important;
+    border-left: 0 !important;
+}
+
+.BcOptionsFayc .input-group-addon select {
+    border: 0;
+    box-shadow: none;
+    height: 100%;
+}
+
+.BcSectionSetting {
+    padding: 0;
+}
+
+.BcContentSectionSetting {
+    margin: 5px;
+    padding: 0;
+    border: 1px solid #1e73be;
+    min-height: 420px;
+}
+
+.BcContentSectionSetting h2 {
+    margin: 0;
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #ffffff;
+    padding: 15px;
+    background: #1e73be;
+    text-align: center;
+}
+
+li#toplevel_page_cab {
+    color: #1e73be;
+}
+
+li#toplevel_page_cab div.wp-menu-image:before {
+    color: #1e73be;
+}
+
+li#toplevel_page_cab .wp-has-current-submenu,
+li#toplevel_page_cab .wp-menu-open {
+    color: #fff;
+    background: #1e73be !important;
+}
+
+li#toplevel_page_cab .wp-has-current-submenu div.wp-menu-image:before,
+li#toplevel_page_cab .wp-menu-open div.wp-menu-image:before {
+    color: #fff;
+}
+
+#wp-admin-bar-wp-logo {
+    display: none !important;
+}
