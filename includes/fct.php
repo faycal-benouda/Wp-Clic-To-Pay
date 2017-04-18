@@ -237,7 +237,7 @@ function Savedonation() {
 	$MECHANT_KEY         = $OptionsSetting["fay_clicktopay_merchantkey"];
 	$VERIFICATION_CODE   = md5($SESSION_ID.$AMOUNT.$MERCHANT_ID.$PAYMENT_REFERENCE.$DATE_TIME.$MECHANT_KEY);
 
-	$titlepost="Donation ".$name." ".$firstname. "(".$PAYMENT_REFERENCE.")";
+	$titlepost="Donation ".$name." ".$firstname. " (".$PAYMENT_REFERENCE.")";
 
 	$CheckOpiration=false;
 	if(isset($AMOUNT) && $AMOUNT!="" && $AMOUNT!=null && $AMOUNT!=0):
@@ -265,7 +265,7 @@ function Savedonation() {
 			add_post_meta($post_id, 'fay_donation_montant', $AMOUNT, true);
 			add_post_meta($post_id, 'fay_donation_status', $fay_donation_status, true);
 
-			ctp_NotificationOperation( $titlepost,$CUSTOMPOST); //Confirmation par email
+			//ctp_NotificationOperation( $titlepost,$CUSTOMPOST, $fay_donation_status); //Confirmation par email
 
 			$response["status"]="Success";
 			$response["ID"]=$post_id;
@@ -293,22 +293,12 @@ function Savedonation() {
 add_action('wp_ajax_Savedonation', 'Savedonation' );
 add_action('wp_ajax_nopriv_Savedonation', 'Savedonation' );
 
-function ctp_NotificationOperation( $titlepost,$CUSTOMPOST){
+function ctp_NotificationOperation( $titlepost,$CUSTOMPOST,$status=2){
 	global $current_user;
 	$options = get_option( 'settingctpt_settings' );
 
-		$headers[] = 'From:'.$CUSTOMPOST["NomdonateurPrincipal"].' <'.$CUSTOMPOST["EmaildonateurPrincipal"].'>';
-
-		$headersadmin[] = 'From: '.$options["fay_custom_nom"].' <'.$options["fay_custom_email"].'>';
-
-
-	 $fay_donation_status=2;
-
-	$typeoffreID=$CUSTOMPOST["typeoffre"];
-	$typeoffreNAME=GetTypeOffre( $typeoffreID);
-	$mode=$CUSTOMPOST["mode"];
-
-	if($mode==2): $fay_donation_status=3;	endif;
+	$headers[] = 'From:'.$CUSTOMPOST["CLIENT_LAST_NAME"].' '.$CUSTOMPOST["CLIENT_FIRST_NAME"].' <'.$CUSTOMPOST["CLIENT_EMAIL"].'>';
+	$headersadmin[] = 'From: '.$options["fay_custom_nom"].' <'.$options["fay_custom_email"].'>';
 
 	$contentmail="
 	<style>
@@ -334,22 +324,24 @@ function ctp_NotificationOperation( $titlepost,$CUSTOMPOST){
 		height:auto;
 	}
 	</style>";
-/*
-      if(isset($CUSTOMPOST["date"]) && $CUSTOMPOST["date"]!=""):
-	      $contentmail.="<p>Date :" .$CUSTOMPOST["date"]."</p>";
-	      $Texto .="Date :" .$CUSTOMPOST["date"]." ".$CUSTOMPOST["heure"];
-	  endif;*/
 
-	  if(isset($CUSTOMPOST["NomdonateurPrincipal"]) && $CUSTOMPOST["NomdonateurPrincipal"]!=""):
-	      $contentmail.="<p>Nom de donateur :" .$CUSTOMPOST["NomdonateurPrincipal"]."</p>";
+	  if(isset($CUSTOMPOST["PAYMENT_REFERENCE"]) && $CUSTOMPOST["PAYMENT_REFERENCE"]!=""):
+	    $ref=$CUSTOMPOST["PAYMENT_REFERENCE"];  
 	  endif;
 
-	  if(isset($CUSTOMPOST["NumdonateurPrincipal"]) && $CUSTOMPOST["NumdonateurPrincipal"]!=""):
-	      $contentmail.="<p>Numéro donateur :" .$CUSTOMPOST["NumdonateurPrincipal"]."</p>";
+	  if(isset($CUSTOMPOST["CLIENT_LAST_NAME"]) && $CUSTOMPOST["CLIENT_LAST_NAME"]!=""):
+	    $last_name=$CUSTOMPOST["CLIENT_LAST_NAME"];  
 	  endif;
 
-	  if(isset($CUSTOMPOST["EmaildonateurPrincipal"]) && $CUSTOMPOST["EmaildonateurPrincipal"]!=""):
-	      $contentmail.="<p>Email donateur :" .$CUSTOMPOST["EmaildonateurPrincipal"]."</p>";
+	  if(isset($CUSTOMPOST["CLIENT_FIRST_NAME"]) && $CUSTOMPOST["CLIENT_FIRST_NAME"]!=""):
+	    $first_name=$CUSTOMPOST["CLIENT_FIRST_NAME"];  
+	  endif;
+
+	  $contentmail.="<p>Référence :" .$ref."</p>";
+	  $contentmail.="<p>Nom de donateur :" .$last_name." ".$first_name."</p>";
+
+	  if(isset($CUSTOMPOST["CLIENT_EMAIL"]) && $CUSTOMPOST["CLIENT_EMAIL"]!=""):
+	      $contentmail.="<p>Email donateur :" .$CUSTOMPOST["CLIENT_EMAIL"]."</p>";
 	  endif;
 
 	  if(isset($CUSTOMPOST["AMOUNT"]) && $CUSTOMPOST["AMOUNT"]!=""):
@@ -357,9 +349,9 @@ function ctp_NotificationOperation( $titlepost,$CUSTOMPOST){
 	      $Texto .="Montant :" .$CUSTOMPOST["AMOUNT"]." TND";
 	  endif;
 
-	  if(isset($fay_donation_status) && $fay_donation_status!=""):
-	      $contentmail.="<p>Statut :" .GetStatus($fay_donation_status)."</p>";
-	      $Texto .="Statut :" .GetStatus($fay_donation_status);
+	  if(isset($status) && $status!=""):
+	      $contentmail.="<p>Statut :" .GetStatus($status)."</p>";
+	      $Texto .="Statut :" .GetStatus($status);
 	  endif;
 
 		$content_email="<p><h2>Votre donation a été effectuée avec succès.</h2></p>". $contentmail."";
@@ -369,8 +361,8 @@ function ctp_NotificationOperation( $titlepost,$CUSTOMPOST){
               wp_mail($current_user->user_email ,$titlepost, $content_email,$headersadmin) ;
           endif;
 
-          if($CUSTOMPOST["EmaildonateurPrincipal"]!=$current_user->user_email && $CUSTOMPOST["EmaildonateurPrincipal"]!=null && $CUSTOMPOST["EmaildonateurPrincipal"]!=""):
-              wp_mail($CUSTOMPOST["EmaildonateurPrincipal"] ,$titlepost, $content_email,$headersadmin) ;
+          if($CUSTOMPOST["CLIENT_EMAIL"]!=$current_user->user_email && $CUSTOMPOST["CLIENT_EMAIL"]!=null && $CUSTOMPOST["CLIENT_EMAIL"]!=""):
+              wp_mail($CUSTOMPOST["CLIENT_EMAIL"] ,$titlepost, $content_email,$headersadmin) ;
           endif;
 
           if($options["fay_custom_email"]!=null && $options["fay_custom_email"]!=""):
@@ -481,10 +473,22 @@ function file_get_content_bypass_https($url) {
 
 function UpdateStatusOfDonate($data, $status){
 	global $donation; // required
+
+	//print_r($data);
+
+	$name                = $data["CLIENT_LAST_NAME"];
+	$firstname           = $data["CLIENT_FIRST_NAME"];
+	$email               = $data["CLIENT_EMAIL"];
+
+	$PAYMENT_REFERENCE   = $data["PAYMENT_REFERENCE"];
+
+	$titlepost="Donation ".$name." ".$firstname. " (".$PAYMENT_REFERENCE.")";
+
+
 	$MessageContent="";
-	$MessageContent.="<div class='container BcMessage'>";
-	$MessageContent.="<div class='row'>";
-	$MessageContent.="<div class='col-lg-6 col-lg-offset-3'>";
+	 $MessageContent.="<div class='container BcMessage'>";
+	  $MessageContent.="<div class='row'>";
+	   $MessageContent.="<div class='col-lg-6 col-lg-offset-3'>";
 
 	$args = array(
 			'post_type'              => 'donateur',
@@ -503,7 +507,12 @@ function UpdateStatusOfDonate($data, $status){
 
 			foreach($the_query as $donation) : setup_postdata($donation);
 		    	if(update_post_meta($donation->ID, 'fay_donation_status', $status)){// update the status to Completed or Failed
-			    	$MessageContent.="<h4>"._("Votre donation Réf : ".$donation->ID." a été effectuée avec succès! Merci")."</h4>";
+					if($status==1):
+						$MessageContent.="<h4>"._("Votre donation Réf : ".$donation->ID." a été effectuée avec succès! Merci")."</h4>";
+						ctp_NotificationOperation( $titlepost,$data, $status); //Confirmation par email
+					else:
+						$MessageContent.="<h4>"._("Votre donation Réf : ".$donation->ID."  n'a pas été effectuée correctement!")."</h4>";
+					endif;
 				} else{
 					$MessageContent.="<h4>"._("Votre donation Réf : ".$donation->ID."  n'a pas été effectuée correctement!")."</h4>";
 				}
@@ -511,8 +520,8 @@ function UpdateStatusOfDonate($data, $status){
 
 		endif;
 
-	$MessageContent.="</div>";
-	$MessageContent.="</div>";
+	   $MessageContent.="</div>";
+	  $MessageContent.="</div>";
 	$MessageContent.="</div>";
 
 	echo $MessageContent;
