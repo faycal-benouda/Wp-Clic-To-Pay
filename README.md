@@ -13,11 +13,13 @@ Site: htt://www.faycal.benouda.com
  
  2- Install it in your Wordpress site.
  
- 3- Create 2 pages :
- 
-  3-1- Payment confirmation page and put in the shortcode [maram_confirm].
+ 3- Create 3 pages :
   
-   3-2- Payment Cancellation Page and put in then shortcode [maram_cancel].
+  3.1- Donate now page andd put in the shortcode [FormClickToPay]
+ 
+  3.2- Payment confirmation page and put in the shortcode [maram_confirm].
+  
+  3.3- Payment Cancellation Page and put in then shortcode [maram_cancel].
    
  4- Configuration your plugin.
  
