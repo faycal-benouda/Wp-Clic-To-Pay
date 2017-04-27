@@ -1,6 +1,6 @@
 $(document).ready(function() {
 
-    $('input[name=AMOUNT]').on('blur', function() {
+    $('input[name=AMOUNT]').on('blur, change', function() {
         var amount = $('input[name=AMOUNT]').val().replace(/^\s+|\s+$/g, '');
         if (($('input[name=AMOUNT]').val() != '') && (!amount.match(/^$/))) {
             $('input[name=AMOUNT]').val(parseInt(amount).toFixed(3));
@@ -20,6 +20,11 @@ $(document).ready(function() {
         if ((RadioVal != '') && (!RadioVal.match(/^$/))) {
             $('input[name=AMOUNT]').val(parseInt(RadioVal).toFixed(3));
         }
+    });
+
+    $('select[name=CURRENCY]').on('change', function() {
+        var currency = $(this).val();
+        $(".labCurrency").html(currency);
     });
 
 

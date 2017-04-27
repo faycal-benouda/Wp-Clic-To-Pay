@@ -106,6 +106,10 @@ function FormClickToPay_shortcode(){
 	
 	$MECHANT_KEY=$OptionsSetting["fay_clicktopay_merchantkey"];
 	$CURRENCY=$OptionsSetting["fay_clicktopay_currency"];
+	
+
+	$arraycurrency=array_map('trim',explode(",",$CURRENCY));
+	//print_r($arraycurrency);
 	$VERIFICATION_CODE="";
 
 	$CONFIRM_PAGE=get_permalink($OptionsSetting["fay_clicktopay_pageconfirmation"]);
@@ -160,39 +164,47 @@ function FormClickToPay_shortcode(){
 					<input type="number" class="field fs-number-element" name="AMOUNT"  required="required" id="field-amount-getway" value="300.000">
 				</div>
 			</div>
-			<div class="col-xs-12 col-md-8 col-lg-9">
+			<div class="col-xs-12 col-md-6 col-lg-7">
 				<ul class="list-radios-amount">
 					<li>
 						<div class="radio">
 							<input type="radio" name="radioamount" id="field-10-getway" value="10">
-							<label for="field-10-getway">10 TND</label>
+							<label for="field-10-getway">10 <span class="labCurrency">?</span></label>
 						</div>
 					</li>
 					<li>
 						<div class="radio">
 							<input type="radio" name="radioamount" id="field-50-getway" value="50">
-							<label for="field-50-getway">50 TND</label>
+							<label for="field-50-getway">50 <span class="labCurrency">?</span></label>
 						</div>
 					</li>
 					<li>
 						<div class="radio">
 							<input type="radio" name="radioamount" id="field-150-getway" value="150">
-							<label for="field-150-getway">150 TND</label>
+							<label for="field-150-getway">150 <span class="labCurrency">?</span></label>
 						</div>
 					</li>
 					<li>
 						<div class="radio">
 							<input type="radio" name="radioamount" id="field-500-getway" value="500">
-							<label for="field-500-getway">500 TND</label>
+							<label for="field-500-getway">500 <span class="labCurrency">?</span></label>
 						</div>
 					</li>
 					<li>
 						<div class="radio">
 							<input type="radio" name="radioamount" id="field-1000-getway" value="1000">
-							<label for="field-1000-getway">1000 TND</label>
+							<label for="field-1000-getway">1000 <span class="labCurrency">?</span></label>
 						</div>
 					</li>
 				</ul>
+			</div>
+             <div class="col-xs-12 col-md-2 col-lg-2">
+			 <select name="CURRENCY" required>
+			   <option value="">Devise *</option>
+				<?php foreach ($arraycurrency as $CurrVal):?>
+					<option value="<?php echo $CurrVal;?>"><?php echo $CurrVal;?></option>
+				<?php endforeach; ?>
+				</select>
 			</div>
 	    </div>
 
@@ -202,7 +214,7 @@ function FormClickToPay_shortcode(){
 		<input type="hidden" name="ACTION" value="<?php echo $ParamClickToPay["ACTION"];?>">
 		<input type="hidden" name="DATE_TIME" value="<?php echo $ParamClickToPay["DATE_TIME"];?>">
 		<input type="hidden" name="MERCHANT_ID" value="<?php echo $ParamClickToPay["MERCHANT_ID"];?>">
-		<input type="hidden" name="CURRENCY" value="<?php echo $ParamClickToPay["CURRENCY"];?>">
+		<?php /*<input type="hidden" name="CURRENCY" value="<?php echo $ParamClickToPay["CURRENCY"];?>">*/ ?>
 		<input type="hidden" name="SESSION_ID" value="<?php echo $ParamClickToPay["SESSION_ID"];?>">
 		<input type="hidden" name="VERIFICATION_CODE" value="<?php echo $ParamClickToPay["VERIFICATION_CODE"];?>" >
 		<input type="submit" class="button alt" id="submit_smt_payment_form" value="<?php echo _e("Donate now","clicktopay-smt");?>">
@@ -248,7 +260,7 @@ function Savedonation() {
 
 	$donation_post = array(
 	  'post_title'    => wp_strip_all_tags( $titlepost),
-	  'post_status'   => 'publish',
+	  'post_status'   => 'private',
 	  'post_type'     => 'donateur'
 	);
 
@@ -438,31 +450,51 @@ add_shortcode("maram_cancel","cancelDonate_shortcode");
 function UpdateDonate($content){
 	$OptionsSetting=get_option( 'settingctpt_settings' );
 	$MECHANT_KEY=$OptionsSetting["fay_clicktopay_merchantkey"];
+    $titlelog="Log";
+
+    //print ($content["SESSION_ID"]." | ".$content["MERCHANT_ID"]." | ".$content["PAYMENT_REFERENCE"]." | ".$content["DATE_TIME"]." | ".$MECHANT_KEY." | 	".$content["PAYMENT_AUTHORIZATION"]);
+    $checkACK= file_get_content_bypass_https($content["ACKNOLEDGEMENT_URL"]);
+
+	if(isset($content["PAYMENT_REFERENCE"]) && $content["PAYMENT_REFERENCE"]!=null && $content["PAYMENT_REFERENCE"]!=""): //Check payment
+
+		if($checkACK=="VERIFIED")://CHECK VERIFIED URL
+
+			$_GET_VERIFICATION_CODE=$content["VERIFICATION_CODE"];
+			
+			$_CHECK_VERIFICATION_CODE=md5($content["SESSION_ID"].$content["MERCHANT_ID"].$content["PAYMENT_REFERENCE"].$content["DATE_TIME"].$MECHANT_KEY.$content["PAYMENT_AUTHORIZATION"]);
+			$content["_CHECK_VERIFICATION_CODE"]=$_CHECK_VERIFICATION_CODE;
+			if($_GET_VERIFICATION_CODE==$_CHECK_VERIFICATION_CODE): //CHECK VERIFICATION_CODE
+				UpdateStatusOfDonate($content, 1);  // update the status to Completed
+				$titlelog="Succes Log";
+			else: //ELSE CHECK VERIFICATION_CODE
+				UpdateStatusOfDonate($content, 3);// update the status to Failed
+				$titlelog="Failed Log";
+				$content["PriveMsg"]="Problem width _GET_VERIFICATION_CODE";
+			endif; //END VERIFICATION_CODE
+
+		else: //ELSE CHECK VERIFIED URL
+		
+			$content["PriveMsg"]="Access denied :: Problem With ACKNOLEDGEMENT_URL file";
+			UpdateStatusOfDonate($content, 3);// update the status to Failed
+			$titlelog="Error Log";
+
+		endif; //END CHECK VERIFIED URL
+
+	else: //ELSE //Check payment
+
+    	$content["PriveMsg"]="Problem Before payment";
+		UpdateStatusOfDonate($content, 3);// update the status to Failed
+		$titlelog="Blocked Log";
+
+	endif; //END //Check payment
 
 	$ctpt_log = array(
-	'post_title'    => wp_strip_all_tags( "Log Return Page "),
-	'post_content'  => json_encode($content),
-	'post_status'   => 'publish',
-	'post_type' => "ctpt_log"
-
+		'post_title'    => wp_strip_all_tags($titlelog),
+		'post_content'  => json_encode($content),
+		'post_status'   => 'private',
+		'post_type' => "ctpt_log",
 	);
 	$ctpt_logid=wp_insert_post( $ctpt_log );
-
- $checkACK= file_get_content_bypass_https($content["ACKNOLEDGEMENT_URL"]);
-	if($checkACK=="VERIFIED")://CHECK VERIFIED URL
-
-		$_GET_VERIFICATION_CODE=$content["VERIFICATION_CODE"];
-		$_CHECK_VERIFICATION_CODE=md5($content["SESSION_ID"].$content["MERCHANT_ID"].$content["PAYMENT_REFERENCE"].$content["DATE_TIME"].$MECHANT_KEY.$content["PAYMENT_AUTHORIZATION"]);
-
-		if($_GET_VERIFICATION_CODE==$_CHECK_VERIFICATION_CODE): //CHECK VERIFICATION_CODE
-			UpdateStatusOfDonate($content, 1);  // update the status to Completed
-		else: //ELSE CHECK VERIFICATION_CODE
-			UpdateStatusOfDonate($content, 3);// update the status to Failed
-		endif; //END VERIFICATION_CODE
-
-	else: //ELSE CHECK VERIFIED URL
-	  UpdateStatusOfDonate($content, 3);// update the status to Failed
-	endif; //END CHECK VERIFIED URL
 }
 
 function file_get_content_bypass_https($url) {  
@@ -474,56 +506,64 @@ function file_get_content_bypass_https($url) {
 function UpdateStatusOfDonate($data, $status){
 	global $donation; // required
 
-	//print_r($data);
-
-	$name                = $data["CLIENT_LAST_NAME"];
-	$firstname           = $data["CLIENT_FIRST_NAME"];
-	$email               = $data["CLIENT_EMAIL"];
-
-	$PAYMENT_REFERENCE   = $data["PAYMENT_REFERENCE"];
-
-	$titlepost="Donation ".$name." ".$firstname. " (".$PAYMENT_REFERENCE.")";
-
-
+	/*print_r($data);*/
 	$MessageContent="";
-	 $MessageContent.="<div class='container BcMessage'>";
+	 $MessageContent.="<div class='BcMessage'>";
 	  $MessageContent.="<div class='row'>";
 	   $MessageContent.="<div class='col-lg-6 col-lg-offset-3'>";
 
-	$args = array(
-			'post_type'              => 'donateur',
-			'post_status'            => 'publish',
-			'meta_query' => array(
-				array(
-					'key'     => 'fay_donation_ref',
-					'value'   => $data["PAYMENT_REFERENCE"],
-					'compare' => '=',
+	if(isset($data["PAYMENT_REFERENCE"]) && $data["PAYMENT_REFERENCE"]!=null && $data["PAYMENT_REFERENCE"]!=""):
+		
+		$name                = $data["CLIENT_LAST_NAME"];
+		$firstname           = $data["CLIENT_FIRST_NAME"];
+		$email               = $data["CLIENT_EMAIL"];
+		$PAYMENT_REFERENCE   = $data["PAYMENT_REFERENCE"];
+		$titlepost="Donation ".$name." ".$firstname. " (".$PAYMENT_REFERENCE.")";
+
+		$args = array(
+				'post_type'              => 'donateur',
+				'post_status'            => 'private',
+				'meta_query' => array(
+					array(
+						'key'     => 'fay_donation_ref',
+						'value'   => $data["PAYMENT_REFERENCE"],
+						'compare' => '=',
+					),
 				),
-			),
-		);
+			);
 
 		$the_query = get_posts( $args ); 
 		if(count($the_query)>0):
 
 			foreach($the_query as $donation) : setup_postdata($donation);
-		    	if(update_post_meta($donation->ID, 'fay_donation_status', $status)){// update the status to Completed or Failed
+		    	if(update_post_meta($donation->ID, 'fay_donation_status', $status)): // update the status to Completed or Failed
 					if($status==1):
-						$MessageContent.="<h4>"._("Votre donation Réf : ".$donation->ID." a été effectuée avec succès! Merci")."</h4>";
+						$MessageContent.="<h4>"._("Votre donation Réf : ".$data["PAYMENT_REFERENCE"]." a été effectuée avec succès! Merci")."</h4>";
 						ctp_NotificationOperation( $titlepost,$data, $status); //Confirmation par email
 					else:
-						$MessageContent.="<h4>"._("Votre donation Réf : ".$donation->ID."  n'a pas été effectuée correctement!")."</h4>";
+						$MessageContent.="<h4>"._("Votre donation Réf : ".$data["PAYMENT_REFERENCE"]."  n'a pas été effectuée correctement!")."</h4>";
 					endif;
-				} else{
-					$MessageContent.="<h4>"._("Votre donation Réf : ".$donation->ID."  n'a pas été effectuée correctement!")."</h4>";
-				}
+				else:
+					$MessageContent.="<h4>"._("Votre donation Réf : ".$data["PAYMENT_REFERENCE"]."  n'a pas été effectuée correctement!")."</h4>";
+				endif;
+
 			endforeach;
 
-		endif;
+			else:
 
-	   $MessageContent.="</div>";
+			$MessageContent.="<h4>"._("Erreur !")."</h4>";
+
+		endif;
+	
+       wp_reset_query();
+
+	else:
+    	$MessageContent.="<h4>"._("Votre donation n'a pas été effectuée correctement!")."</h4>";
+	endif;
+
+		   $MessageContent.="</div>";
 	  $MessageContent.="</div>";
 	$MessageContent.="</div>";
 
 	echo $MessageContent;
-    wp_reset_query();
 }

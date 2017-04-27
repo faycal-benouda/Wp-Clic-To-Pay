@@ -3,7 +3,7 @@
 Plugin Name: clicktopay-smt
 Description: Plugin ClickToPay SMT Tunisie
 Author: Fayçal ben ouda
-Version: 1.0.0
+Version: 1.1.0
 */
 class load_language {
     public function __construct(){ add_action('init', array($this, 'load_fay_languages')); }

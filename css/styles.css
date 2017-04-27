@@ -60,7 +60,8 @@
 }
 
 .list-radios-amount li label {
-    padding-left: 20px;
+    padding-left: 10px;
+    font-size: 12px;
 }
 
 .BcMessage h4 {
