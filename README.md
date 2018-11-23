@@ -10,7 +10,7 @@ Author: [Fayçal ben ouda](https://github.com/faycal-benouda).
  
  3- Create 3 pages :
   
-  3.1- Donate now page andd put in the shortcode [FormClickToPay]
+  3.1- Donate now page and put in the shortcode [FormClickToPay]
  
   3.2- Payment confirmation page and put in the shortcode [maram_confirm].
   
